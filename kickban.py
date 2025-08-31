@@ -6,6 +6,7 @@ from telegram.ext import (
     ConversationHandler, ContextTypes, filters
 )
 from config import SERVERSRCON as SERVERS
+from config import ALLOWED_ADMINS
 
 # 🎯 Состояния
 KICK_SELECT, KICK_ID = range(2)
@@ -32,7 +33,8 @@ def send_command(server, command: str):
         print(f"❌ Ошибка Telnet: {e}")
         return None, str(e)
 
-
+def is_admin(user_id: int) -> bool:
+    return user_id in ALLOWED_ADMINS
 
 # 📦 Формат результата
 def format_result(server_name, status, response, success_text):
@@ -68,6 +70,11 @@ def ban_on_all_servers(steam_id: str, reason: str, days: int):
 
 # 👢 Диалог кика
 async def start_kick(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        await update.message.reply_text("🚫 У вас нет прав для использования этой команды.")
+        return ConversationHandler.END
+
     keyboard = [[InlineKeyboardButton(s["name"], callback_data=str(i))] for i, s in enumerate(SERVERS)]
     await update.message.reply_text("🖥️ Выберите сервер для кика:", reply_markup=InlineKeyboardMarkup(keyboard))
     return KICK_SELECT
@@ -88,6 +95,11 @@ async def handle_kick_id(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # 🚫 Диалог бана
 async def start_ban(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        await update.message.reply_text("🚫 У вас нет прав для использования этой команды.")
+        return ConversationHandler.END
+
     keyboard = [[InlineKeyboardButton(s["name"], callback_data=str(i))] for i, s in enumerate(SERVERS)]
     await update.message.reply_text("🖥️ Выберите сервер для бана:", reply_markup=InlineKeyboardMarkup(keyboard))
     return BAN_SELECT
@@ -124,6 +136,11 @@ async def handle_ban_days(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # 🚫 Диалог бана на всех
 async def start_banall(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.effective_user.id
+    if not is_admin(user_id):
+        await update.message.reply_text("🚫 У вас нет прав для использования этой команды.")
+        return ConversationHandler.END
+
     await update.message.reply_text("🔢 Введите SteamID64 игрока для бана на всех серверах:")
     return BANALL_STEAMID
 
