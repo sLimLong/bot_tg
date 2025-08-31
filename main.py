@@ -10,7 +10,6 @@ from kickban import kickban_handlers
 from stats import stats_handler
 from top_voters import top_voters_handler, top_voters_callback_handler
 from top_players import top_players_handler, top_players_callback_handler
-from menu import menu_handlers
 
 # 🔧 Логирование только в консоль
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +25,6 @@ def run_bot():
             admin_handlers +
             status_handlers +
             kickban_handlers +
-            menu_handlers +
             [stats_handler] +
             [top_voters_handler, top_voters_callback_handler] +
             [top_players_handler, top_players_callback_handler] +
