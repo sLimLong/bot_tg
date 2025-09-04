@@ -8,8 +8,6 @@ from admin import admin_handlers
 from status import status_handlers, schedule_jobs
 from kickban import kickban_handlers
 from stats import stats_handler
-from top_voters import top_voters_handler, top_voters_callback_handler
-from top_players import top_players_handler, top_players_callback_handler
 
 # 🔧 Логирование только в консоль
 logging.basicConfig(level=logging.INFO)
@@ -26,8 +24,6 @@ def run_bot():
             status_handlers +
             kickban_handlers +
             [stats_handler] +
-            [top_voters_handler, top_voters_callback_handler] +
-            [top_players_handler, top_players_callback_handler] +
             [players_handler, players_callback_handler]
         )
         for handler in all_handlers:
