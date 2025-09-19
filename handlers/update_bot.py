@@ -18,22 +18,17 @@ async def update_bot_handler(update: Update, context: ContextTypes.DEFAULT_TYPE)
     try:
         os.chdir(BOT_DIR)
 
-        git_result = subprocess.check_output(["git", "pull"], stderr=subprocess.STDOUT).decode()
-        pip_result = subprocess.check_output(["pip3", "install", "-r", "requirements.txt"], stderr=subprocess.STDOUT).decode()
-
-        await update.message.reply_text(
-            "✅ Обновление завершено.\n\n📦 Git:\n" + git_result +
-            "\n🐍 Pip:\n" + pip_result +
-            "\n\n🔁 Перезапускаюсь..."
-        )
-
+        subprocess.check_call(["git", "pull"])
+        subprocess.check_call(["pip3", "install", "-r", "requirements.txt"])
         subprocess.run(["systemctl", "restart", SERVICE_NAME])
 
-    except subprocess.CalledProcessError as e:
-        await update.message.reply_text(f"❌ Ошибка:\n{e.output.decode()}")
+        await update.message.reply_text("✅ Обновление и перезапуск прошли успешно.")
+
+    except subprocess.CalledProcessError:
+        await update.message.reply_text("❌ Обновление не удалось. Проверь журнал ошибок.")
 
     except Exception as e:
-        await update.message.reply_text(f"❌ Непредвиденная ошибка:\n{str(e)}")
+        await update.message.reply_text(f"❌ Непредвиденная ошибка: {str(e)}")
 
 def get_handler():
     return CommandHandler("update_bot", update_bot_handler)
