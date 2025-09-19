@@ -5,6 +5,7 @@ from datetime import datetime
 from config import SERVERS
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
+from telegram.constants import ChatMemberStatus
 
 DATA_FILE = "players_data.json"
 
@@ -22,28 +23,29 @@ def save_players_data(data):
     except Exception as e:
         print(f"❌ Ошибка при сохранении: {e}")
 
-def update_players_storage(new_players):
+def update_players_storage(new_players_by_server):
     data = load_players_data()
     now = datetime.utcnow().isoformat()
 
-    for player in new_players:
-        sid = player.get("steamid", player.get("name"))
-        if sid not in data:
-            data[sid] = {}
+    for server_name, players in new_players_by_server.items():
+        if server_name not in data:
+            data[server_name] = {}
 
-        data[sid].update({
-            "name": player.get("name", "Без имени"),
-            "score": player.get("score", 0),
-            "zombiekills": player.get("zombiekills", 0),
-            "level": player.get("level", 0),
-            "deaths": player.get("deaths", 0),
-            "last_seen": now
-        })
+        for player in players:
+            sid = player.get("steamid", player.get("name"))
+            data[server_name][sid] = {
+                "name": player.get("name", "Без имени"),
+                "score": player.get("score", 0),
+                "zombiekills": player.get("zombiekills", 0),
+                "level": player.get("level", 0),
+                "deaths": player.get("deaths", 0),
+                "last_seen": now
+            }
 
     save_players_data(data)
 
 def fetch_player_data():
-    all_players = []
+    all_players_by_server = {}
 
     for server in SERVERS:
         try:
@@ -51,18 +53,19 @@ def fetch_player_data():
             response = requests.get(url, auth=server["auth"], timeout=10)
             data = response.json()
             players = data.get("data", {}).get("players", [])
-            for p in players:
-                all_players.append({
-                    "name": p.get("name", "Без имени"),
-                    "steamid": p.get("platformId", {}).get("userId", ""),
-                    "score": p.get("score", 0),
-                    "zombiekills": p.get("kills", {}).get("zombies", 0),
-                    "level": p.get("level", 0),
-                    "deaths": p.get("deaths", 0)
-                })
+            parsed_players = [{
+                "name": p.get("name", "Без имени"),
+                "steamid": p.get("platformId", {}).get("userId", ""),
+                "score": p.get("score", 0),
+                "zombiekills": p.get("kills", {}).get("zombies", 0),
+                "level": p.get("level", 0),
+                "deaths": p.get("deaths", 0)
+            } for p in players]
+            all_players_by_server[server["name"]] = parsed_players
         except Exception as e:
             print(f"❌ Ошибка при запросе к {server['name']}: {e}")
-    return all_players
+    return all_players_by_server
+
 
 def calculate_total(player):
     return player["score"] + player["zombiekills"] + player["level"] - player["deaths"]
@@ -71,16 +74,20 @@ def build_top_message(data, key=None, label="общей активности", r
     if not data:
         return "😕 Нет данных о игроках."
 
-    if key:
-        sorted_players = sorted(data.values(), key=lambda x: x.get(key, 0), reverse=reverse)[:limit]
-    else:
-        sorted_players = sorted(data.values(), key=calculate_total, reverse=True)[:limit]
+    message = f"🏆 Топ игроков по {label}:\n\n"
+    for server_name, players in data.items():
+        message += f"🌐 Сервер: {server_name}\n"
+        if key:
+            sorted_players = sorted(players.values(), key=lambda x: x.get(key, 0), reverse=reverse)[:limit]
+        else:
+            sorted_players = sorted(players.values(), key=calculate_total, reverse=True)[:limit]
 
-    message = f"🏆 Топ игроков по {label}:\n"
-    for i, p in enumerate(sorted_players, 1):
-        value = p.get(key, calculate_total(p)) if key else calculate_total(p)
-        message += f"{i}. {p['name']} — {value}\n"
+        for i, p in enumerate(sorted_players, 1):
+            value = p.get(key, calculate_total(p)) if key else calculate_total(p)
+            message += f"{i}. {p['name']} — {value}\n"
+        message += "\n"
     return message
+
 
 def build_keyboard():
     return InlineKeyboardMarkup([
@@ -97,7 +104,7 @@ async def top_players_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     data = load_players_data()
     message = build_top_message(data)
     await update.message.reply_text(message, reply_markup=build_keyboard())
-
+    
 async def top_players_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -116,7 +123,24 @@ async def top_players_callback(update: Update, context: ContextTypes.DEFAULT_TYP
     data = load_players_data()
     message = build_top_message(data, key=key_for_sort, label=label_map[key], reverse=reverse)
     await query.edit_message_text(message, reply_markup=build_keyboard())
+    
+async def reset_stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.effective_user
+    chat = update.effective_chat
+    member = await context.bot.get_chat_member(chat.id, user.id)
+
+    if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
+        await update.message.reply_text("🚫 Только администраторы могут сбрасывать статистику.")
+        return
+
+    save_players_data({})
+    await update.message.reply_text("✅ Статистика игроков успешно сброшена.")
+
+    
 
 # Хендлеры для main.py
 top_players_handler = CommandHandler("top_pl", top_players_command)
+reset_stats_handler = CommandHandler("reset_stats", reset_stats_command)
 top_players_callback_handler = CallbackQueryHandler(top_players_callback, pattern="^(score|zombiekills|level|deaths|total)$")
+
+

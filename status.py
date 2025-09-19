@@ -1,33 +1,35 @@
-import time, requests, logging
+import time
+import requests
+import logging
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, ContextTypes
 from config import SERVERS, last_request_time, REQUEST_INTERVAL
 
-# 📋 Команда /menu — выбор сервера
-async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
+# 📋 Команда /status — выбор сервера
+async def status_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [InlineKeyboardButton(server["name"], callback_data=f"menu_{i}")]
+        [InlineKeyboardButton(server["name"], callback_data=f"status_{i}")]
         for i, server in enumerate(SERVERS)
     ]
-    await update.message.reply_text("📋 Выберите сервер:", reply_markup=InlineKeyboardMarkup(keyboard))
+    await update.message.reply_text("📋 Выберите сервер для статуса:", reply_markup=InlineKeyboardMarkup(keyboard))
 
 # 🎯 Обработка выбора сервера
-async def handle_server_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_status_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
-    if not query.data.startswith("menu_"):
+    if not query.data.startswith("status_"):
         return
 
     try:
-        index = int(query.data.replace("menu_", ""))
+        index = int(query.data.replace("status_", ""))
         server = SERVERS[index]
     except (ValueError, IndexError):
         await query.edit_message_text("❌ Сервер не найден.")
         return
 
     now = time.time()
-    key = (server["name"], "menu")
+    key = (server["name"], "status")
     if now - last_request_time.get(key, 0) < REQUEST_INTERVAL:
         await query.edit_message_text(f"⏳ {server['name']} — запрос недавно был")
         return
@@ -57,13 +59,13 @@ async def handle_server_choice(update: Update, context: ContextTypes.DEFAULT_TYP
         await query.edit_message_text(msg)
 
     except Exception as e:
-        logging.warning(f"[menu] Ошибка: {e}")
+        logging.warning(f"[status] Ошибка: {e}")
         await query.edit_message_text(f"❌ Ошибка: {e}")
 
 # 📦 Экспорт хендлеров
 status_handlers = [
-    CommandHandler("menu", menu),
-    CallbackQueryHandler(handle_server_choice, pattern=r"^menu_")
+    CommandHandler("info", status_menu),
+    CallbackQueryHandler(handle_status_choice, pattern=r"^status_")
 ]
 
 # 🕒 Заглушка для фоновых задач
