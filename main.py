@@ -18,6 +18,7 @@ from reload_config import reload_config_handler
 from whois import whois_handler
 from banlist_updater import update_banlist
 from handlers.update_bot import get_handler
+from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -48,7 +49,6 @@ def run_bot():
         top_players_handlers = [top_players_handler, top_players_callback_handler, reset_stats_handler]
         vk_handlers = [topic_handler]
 
-        # 📥 Регистрируем все хендлеры
         all_handlers = (
             core_handlers +
             stats_handlers +
@@ -56,7 +56,7 @@ def run_bot():
             players_handlers +
             top_players_handlers +
             vk_handlers +
-            [get_handler()]
+            [get_handler(), reg_handler, whoami_handler]  # ✅ Добавлен whoami_handler
         )
 
         for handler in all_handlers:
@@ -66,6 +66,9 @@ def run_bot():
         schedule_bloodmoon_jobs(app.job_queue)
         app.job_queue.run_repeating(lambda ctx: update_banlist(), interval=3600, first=10)
         app.job_queue.run_repeating(update_players_job, interval=300, first=15)
+
+        # 🔄 Запускаем listener'ы после создания app
+        run_all_listeners(app.bot)
 
         logging.info("✅ Все модули подключены. Ожидаем события...")
         app.run_polling()
