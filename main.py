@@ -17,6 +17,7 @@ from admin_menu import admin_menu_handler
 from reload_config import reload_config_handler
 from whois import whois_handler
 from banlist_updater import update_banlist
+from handlers.update_bot import get_handler
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -54,7 +55,8 @@ def run_bot():
             voters_handlers +
             players_handlers +
             top_players_handlers +
-            vk_handlers
+            vk_handlers +
+            [get_handler()]
         )
 
         for handler in all_handlers:
