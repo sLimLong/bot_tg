@@ -30,7 +30,6 @@ async def handle_admin_server_choice(update: Update, context: ContextTypes.DEFAU
         [InlineKeyboardButton("📍 Кик", callback_data="action_kick")],
         [InlineKeyboardButton("📍 Бан", callback_data="action_ban")],
         [InlineKeyboardButton("📍 Бан на всех серверах", callback_data="action_banall")],
-        [InlineKeyboardButton("📣 Broadcast", callback_data="action_broadcast")],
         [InlineKeyboardButton("👥 Онлайн игроки", callback_data="action_players")],
         [InlineKeyboardButton("🔍 Игрок по EntityID", callback_data="action_apl")],
         [InlineKeyboardButton("📘 Команды бота", callback_data="action_commands")]
@@ -50,9 +49,6 @@ async def handle_admin_action(update: Update, context: ContextTypes.DEFAULT_TYPE
         await query.edit_message_text(f"🔁 {server_name} — перезапуск инициирован (заглушка)")
     elif action == "shutdown":
         await query.edit_message_text(f"⛔ {server_name} — отключение инициировано (заглушка)")
-    elif action == "broadcast":
-        await query.edit_message_text("📣 Введите сообщение для канала:")
-        context.user_data["broadcast_mode"] = True
     elif action == "players":
         try:
             response = requests.get(f"{server['url']}/api/getplayersonline", auth=server['auth'], timeout=5)
