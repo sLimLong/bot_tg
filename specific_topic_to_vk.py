@@ -2,12 +2,7 @@ import logging
 import aiohttp
 from telegram import Update
 from telegram.ext import MessageHandler, filters, ContextTypes
-
-# 🔑 Настройки
-VK_TOKEN = "vk1.a.fWx8Je9RjMwNhr2Xx-1q8EAcHrGLGYNcNE9RY-KZ56rbDwHof-CybEruoUmpLM-yRNiZ_Rl3RE5gw6wm9bsE9eWF3EgVzzeZI9eDyldxYwQrocv6yNmavgm6tWM9SiroYR_po_GX1o1al3jsytIdn0tXsYEYbgblkNocEoFfZjQYJtfEE1D606pwBL0LiXgx4iQaJqbnp3-Lm35lcIhkoA"
-VK_GROUP_ID = 148250057
-TELEGRAM_GROUP_ID = -1002418675036
-TARGET_THREAD_ID = 31  # ID нужного топика
+from config import VK_TOKEN, VK_GROUP_ID, TELEGRAM_GROUP_ID, TARGET_THREAD_ID  # ✅ Импорт из конфига
 
 # 📤 Асинхронная отправка в VK
 async def post_to_vk(text: str, message_id: int):
