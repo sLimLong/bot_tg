@@ -43,20 +43,23 @@ async def check_bloodmoon(context: CallbackContext):
             response = requests.get(f"{server['url']}/api/getstats", auth=server['auth'], timeout=5)
             data = response.json()
             day = data.get("gametime", {}).get("days")
-            time_of_day = data.get("gametime", {}).get("time")
+            hours = data.get("gametime", {}).get("hours")
+            minutes = data.get("gametime", {}).get("minutes")
+
 
             logging.info(f"[bloodmoon] Сервер {name} — День {day}")
+            time_str = f"{hours:02d}:{minutes:02d}"
 
             if not isinstance(day, int):
                 logging.warning(f"[bloodmoon] Некорректный формат дня на {name}: {day}")
                 continue
 
             if day % 7 == 0:
-                msg = f"🌕 Сегодня — Красная ночь на сервере {name}! Сейчас День {day}, Время {time_of_day}"
+                msg = f"🌕 Сегодня — Красная ночь на сервере {name}! Сейчас День {day}, Время {time_str}"
             elif day % 7 == 6:
-                msg = f"🩸 Завтра — Красная ночь на сервере {name}! Сейчас День {day}, Время {time_of_day}"
+                msg = f"🩸 Завтра — Красная ночь на сервере {name}! Сейчас День {day}, Время {time_str}"
             else:
-                logging.info(f"[bloodmoon] Нет КН на {name} — День {day}, Время {time_of_day}")
+                logging.info(f"[bloodmoon] Нет КН на {name} — День {day}, Время {time_str}")
                 continue
 
             # 📤 Отправка в топик
