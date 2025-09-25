@@ -14,6 +14,7 @@ async def player_menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         "/topvoters — топ голосующих\n\n"
         "📋 <b>Прочее</b>\n"
         "/menu — главное меню\n"
+        "/reg — привязать стим(для бонусов)\n"
     )
     await update.message.reply_text(text, parse_mode="HTML")
 
