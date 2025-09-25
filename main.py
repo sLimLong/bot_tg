@@ -19,6 +19,7 @@ from whois import whois_handler
 from banlist_updater import update_banlist
 from handlers.update_bot import get_handler
 from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
+from handlers.text_menu import menu_handlers
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -56,6 +57,7 @@ def run_bot():
             players_handlers +
             top_players_handlers +
             vk_handlers +
+            menu_handlers +
             [get_handler(), reg_handler, whoami_handler]  # ✅ Добавлен whoami_handler
         )
 
