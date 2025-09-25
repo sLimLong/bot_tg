@@ -1,9 +1,5 @@
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
-from players import online_command
-from status import status_menu
-from top_voters import top_voters_command
-from top_playerstats import topstats_command
 
 async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
     menu_text = (
@@ -18,8 +14,4 @@ async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 menu_handlers = [
     CommandHandler("menu", main_menu),
-    CommandHandler("status", status_menu),
-    CommandHandler("topvoters", top_voters_command),
-    CommandHandler("topplayers", topstats_command),
-    CommandHandler("online", online_command)
 ]
