@@ -43,6 +43,7 @@ async def check_bloodmoon(context: CallbackContext):
             response = requests.get(f"{server['url']}/api/getstats", auth=server['auth'], timeout=5)
             data = response.json()
             day = data.get("gametime", {}).get("days")
+            time_of_day = data.get("gametime", {}).get("time")
 
             logging.info(f"[bloodmoon] Сервер {name} — День {day}")
 
@@ -51,11 +52,11 @@ async def check_bloodmoon(context: CallbackContext):
                 continue
 
             if day % 7 == 0:
-                msg = f"🌕 Сегодня — Красная ночь на сервере {name}! Сейчас День {day}."
+                msg = f"🌕 Сегодня — Красная ночь на сервере {name}! Сейчас День {day}, Время {time_of_day}"
             elif day % 7 == 6:
-                msg = f"🩸 Завтра — Красная ночь на сервере {name}! Сейчас День {day}."
+                msg = f"🩸 Завтра — Красная ночь на сервере {name}! Сейчас День {day}, Время {time_of_day}"
             else:
-                logging.info(f"[bloodmoon] Нет КН на {name} — День {day}")
+                logging.info(f"[bloodmoon] Нет КН на {name} — День {day}, Время {time_of_day}")
                 continue
 
             # 📤 Отправка в топик
