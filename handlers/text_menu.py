@@ -1,17 +1,21 @@
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
 
-async def main_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    menu_text = (
-        "📋 Главное меню:\n\n"
-        "🖥️ /status — Статус сервера\n"
-        "📊 /topvoters — Топ голосующих\n"
-        "🧠 /topplayers — Топ игроков\n"
-        "👥 /online — Онлайн-игроки\n"
-        "🔄 /menu — Обновить меню"
+async def player_menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (
+        "🎮 <b>Игровое меню</b>\n\n"
+        "🖥️ <b>Информация о сервере</b>\n"
+        "/status — статус сервера\n"
+        "/players — кто сейчас онлайн\n"
+        "/whoami — кто я в системе\n"
+        "/whois [имя] — информация об игроке\n\n"
+        "📊 <b>Статистика</b>\n"
+        "/topplayers — топ игроков по онлайну\n"
+        "/topvoters — топ голосующих\n\n"
+        "📋 <b>Прочее</b>\n"
+        "/menu — главное меню\n"
     )
-    await update.message.reply_text(menu_text)
+    await update.message.reply_text(text, parse_mode="HTML")
 
-menu_handlers = [
-    CommandHandler("menu", main_menu),
-]
+# 📦 Экспорт хендлеров
+menu_handlers = [CommandHandler("menu", player_menu_command)]
