@@ -126,15 +126,14 @@ async def top_players_callback(update: Update, context: ContextTypes.DEFAULT_TYP
     
 async def reset_stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
-    chat = update.effective_chat
-    member = await context.bot.get_chat_member(chat.id, user.id)
 
-    if member.status not in [ChatMemberStatus.ADMINISTRATOR, ChatMemberStatus.OWNER]:
-        await update.message.reply_text("🚫 Только администраторы могут сбрасывать статистику.")
+    if user.id not in ALLOWED_ADMINS:
+        await update.message.reply_text("🚫 У вас нет прав на сброс статистики.")
         return
 
     save_players_data({})
     await update.message.reply_text("✅ Статистика игроков успешно сброшена.")
+
     
 def update_players_job(context=None):
     players = fetch_player_data()
