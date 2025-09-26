@@ -6,6 +6,7 @@ from config import SERVERS
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
 from telegram.constants import ChatMemberStatus
+from config import ALLOWED_ADMINS
 
 DATA_FILE = os.path.join("data", "players_data.json")
 
@@ -133,8 +134,7 @@ async def reset_stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 
     save_players_data({})
     await update.message.reply_text("✅ Статистика игроков успешно сброшена.")
-
-    
+  
 def update_players_job(context=None):
     players = fetch_player_data()
     update_players_storage(players)
