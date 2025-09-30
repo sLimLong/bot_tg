@@ -55,16 +55,21 @@ def run_cheater_listener(server):
             time.sleep(5)
             continue
 
-        for entry in entries:
-            last_line = entry.get("id", last_line)
-            msg = entry.get("msg", "")
+for entry in entries:
+    last_line = entry.get("id", last_line)
+    msg = entry.get("msg", "")
 
-            # 🎯 Фильтруем только сообщения из Steam-чата
-            if "Chat (from 'Steam" not in msg:
-                continue
+    # 🎯 Обрабатываем только настоящие игровые сообщения от Steam
+    if "Chat (from 'Steam_" not in msg:
+        continue
 
-            if contains_cheat_word(msg):
-                send_cheater_alert(msg, server["name"])
+    # 🚫 Игнорируем сообщения, обработанные модами
+    if "Chat handled by mod" in msg:
+        continue
+
+    if contains_cheat_word(msg):
+        send_cheater_alert(msg, server["name"])
+
 
         time.sleep(5)
 
