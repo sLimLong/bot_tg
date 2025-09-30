@@ -1,4 +1,8 @@
-import telnetlib, re, json, os, logging
+import telnetlib
+import re
+import json
+import os
+import logging
 from config import SERVERSRCON, BANLIST_GROUP_ID, BANLIST_THREAD_ID
 
 BANLIST_PATH = os.path.join("data", "banlist.json")
@@ -41,8 +45,8 @@ def update_banlist(context=None):
         try:
             with open(BANLIST_PATH, "r", encoding="utf-8") as f:
                 old_data = json.load(f)
-        except:
-            pass
+        except Exception as e:
+            logging.warning(f"[banlist] Ошибка чтения старого банлиста: {e}")
 
     # Сохраняем новый банлист
     with open(BANLIST_PATH, "w", encoding="utf-8") as f:
@@ -64,20 +68,19 @@ def update_banlist(context=None):
                 if entry["steamid"] not in old_ids:
                     new_bans.append((server, entry))
 
-if new_bans:
-    msg = f"🛑 Обнаружено {len(new_bans)} новых банов:\n\n"
-    for server, entry in new_bans[:10]:
-        msg += (
-            f"🌐 <b>{server}</b>\n"
-            f"👤 {entry['name']} ({entry['steamid']})\n"
-            f"📄 Причина: {entry['reason']}\n"
-            f"⏳ До: {entry['date']}\n\n"
-        )
+        if new_bans:
+            msg = f"🛑 Обнаружено {len(new_bans)} новых банов:\n\n"
+            for server, entry in new_bans[:10]:  # ограничим до 10
+                msg += (
+                    f"🌐 <b>{server}</b>\n"
+                    f"👤 {entry['name']} ({entry['steamid']})\n"
+                    f"📄 Причина: {entry['reason']}\n"
+                    f"⏳ До: {entry['date']}\n\n"
+                )
 
-    context.bot.send_message(
-        chat_id=BANLIST_GROUP_ID,
-        message_thread_id=BANLIST_THREAD_ID,
-        text=msg.strip(),
-        parse_mode="HTML"
-    )
-
+            context.bot.send_message(
+                chat_id=BANLIST_GROUP_ID,
+                message_thread_id=BANLIST_THREAD_ID,
+                text=msg.strip(),
+                parse_mode="HTML"
+            )
