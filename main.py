@@ -1,7 +1,7 @@
 import logging
 import os
 from telegram.ext import ApplicationBuilder
-from config import TOKEN
+from config import TOKEN, SERVERS
 
 # 👥 Импорт хендлеров
 from players import players_handler, players_callback_handler
@@ -20,6 +20,7 @@ from banlist_updater import update_banlist
 from handlers.update_bot import get_handler
 from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
 from handlers.text_menu import menu_handlers
+from modules.cheater_alerts import start_cheater_alerts
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -58,7 +59,7 @@ def run_bot():
             top_players_handlers +
             vk_handlers +
             menu_handlers +
-            [get_handler(), reg_handler, whoami_handler]  # ✅ Добавлен whoami_handler
+            [get_handler(), reg_handler, whoami_handler]  
         )
 
         for handler in all_handlers:
@@ -71,7 +72,9 @@ def run_bot():
 
         # 🔄 Запускаем listener'ы после создания app
         run_all_listeners(app.bot)
-
+        
+        start_cheater_alerts()
+        
         logging.info("✅ Все модули подключены. Ожидаем события...")
         app.run_polling()
 
@@ -80,3 +83,5 @@ def run_bot():
 
 if __name__ == "__main__":
     run_bot()
+
+

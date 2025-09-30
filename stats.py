@@ -1,9 +1,11 @@
 import requests
+from io import BytesIO
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     CommandHandler, CallbackQueryHandler,
     ContextTypes, ConversationHandler
 )
+from telegram.error import TelegramError
 from config import SERVERS, ALLOWED_ADMINS
 
 SELECT_SERVER = 0
@@ -21,7 +23,6 @@ def get_ip_info(ip: str) -> str:
         city = data.get("city", "—")
         isp = data.get("isp", "—")
 
-        # Метки подозрительности
         flags = []
         if data.get("proxy"): flags.append("VPN/Proxy")
         if data.get("hosting"): flags.append("Hosting")
@@ -60,7 +61,7 @@ async def handle_stats_server(update: Update, context: ContextTypes.DEFAULT_TYPE
         response = requests.get(
             f"{server['url']}/api/player/",
             auth=server['auth'],
-            timeout=5
+            timeout=10
         )
         data = response.json()
         players = data.get("data", {}).get("players", [])
@@ -91,8 +92,21 @@ async def handle_stats_server(update: Update, context: ContextTypes.DEFAULT_TYPE
                 f"🚫 Бан: `{banned.get('banActive', False)}`\n----"
             )
 
-        text = f"👥 *{server['name']}* — онлайн ({len(players)}):\n\n" + "\n".join(lines)
-        await query.message.reply_text(text, parse_mode="Markdown")
+        chunk_size = 10
+        for i in range(0, len(lines), chunk_size):
+            chunk = lines[i:i + chunk_size]
+            chunk_text = f"👥 *{server['name']}* — онлайн ({len(players)}):\n\n" + "\n".join(chunk)
+
+            try:
+                await query.message.reply_text(chunk_text, parse_mode="Markdown")
+            except TelegramError as e:
+                if "Message is too long" in str(e):
+                    file = BytesIO()
+                    file.write(chunk_text.encode('utf-8'))
+                    file.seek(0)
+                    await query.message.reply_document(file, filename=f"{server['name']}_stats_{i//chunk_size+1}.txt")
+                else:
+                    await query.message.reply_text(f"❌ Ошибка при отправке: `{e}`", parse_mode="Markdown")
 
     except Exception as e:
         await query.message.reply_text(f"❌ *{server['name']}* — ошибка: `{e}`", parse_mode="Markdown")
