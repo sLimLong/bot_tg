@@ -6,7 +6,7 @@ from telegram import Bot
 from config import ALLOWED_ADMINS, GROUP_CHAT_ID, CHANNEL_CHAT_ID
 
 bot = Bot(token=TOKEN)
-CHEAT_KEYWORDS = ["чит", "читак", "читер", "читеры", "читами", "читов"]
+CHEAT_KEYWORDS = ["чит", "читак", "читер", "читеры", "читами", "читов", "админ"]
 
 # 🔍 Проверка сообщения на ключевые слова
 def contains_cheat_word(msg):
