@@ -64,18 +64,20 @@ def update_banlist(context=None):
                 if entry["steamid"] not in old_ids:
                     new_bans.append((server, entry))
 
-        if new_bans:
-            msg = f"🛑 Обнаружено {len(new_bans)} новых банов:\n\n"
-            for server, entry in new_bans[:10]:  # ограничим до 10
-                msg += (
-                    f"🌐 <b>{server}</b>\n"
-                    f"👤 {entry['name']} ({entry['steamid']})\n"
-                    f"📄 Причина: {entry['reason']}\n"
-                    f"⏳ До: {entry['date']}\n\n"
-                )
-            context.bot.send_message(
-                chat_id=BANLIST_GROUP_ID,
-                message_thread_id=BANLIST_THREAD_ID,
-                text=msg.strip(),
-                parse_mode="HTML"
-            )
+if new_bans:
+    msg = f"🛑 Обнаружено {len(new_bans)} новых банов:\n\n"
+    for server, entry in new_bans[:10]:
+        msg += (
+            f"🌐 <b>{server}</b>\n"
+            f"👤 {entry['name']} ({entry['steamid']})\n"
+            f"📄 Причина: {entry['reason']}\n"
+            f"⏳ До: {entry['date']}\n\n"
+        )
+
+    context.bot.send_message(
+        chat_id=BANLIST_GROUP_ID,
+        message_thread_id=BANLIST_THREAD_ID,
+        text=msg.strip(),
+        parse_mode="HTML"
+    )
+
