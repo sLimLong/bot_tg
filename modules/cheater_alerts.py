@@ -2,8 +2,7 @@ import requests
 import time
 import re
 import threading
-from telegram import Bot
-from config import ALLOWED_ADMINS, GROUP_CHAT_ID, CHANNEL_CHAT_ID, SERVERS
+from config import TOKEN, GROUP_CHAT_ID, CHANNEL_CHAT_ID, SERVERS
 
 CHEAT_KEYWORDS = ["чит", "читак", "читер", "читеры", "читами", "читов"]
 
@@ -11,8 +10,7 @@ CHEAT_KEYWORDS = ["чит", "читак", "читер", "читеры", "чит�
 def contains_cheat_word(msg):
     return any(word in msg.lower() for word in CHEAT_KEYWORDS)
 
-# 📤 Отправка алерта админам
-
+# 📤 Отправка алерта в Telegram (только в группу и канал)
 def send_cheater_alert(msg, server_name):
     alert = (
         f"⚠️ Обнаружено сообщение с подозрением на чит\n"
@@ -20,7 +18,7 @@ def send_cheater_alert(msg, server_name):
         f"💬 Текст: {msg}"
     )
 
-    recipients = ALLOWED_ADMINS + [GROUP_CHAT_ID, CHANNEL_CHAT_ID]
+    recipients = [GROUP_CHAT_ID, CHANNEL_CHAT_ID]
 
     for chat_id in recipients:
         try:
@@ -31,7 +29,6 @@ def send_cheater_alert(msg, server_name):
             ).raise_for_status()
         except Exception as e:
             print(f"❌ Не удалось отправить в {chat_id}: {e}")
-
 
 # 🔄 Слушатель логов
 def run_cheater_listener(server):
@@ -61,6 +58,11 @@ def run_cheater_listener(server):
         for entry in entries:
             last_line = entry.get("id", last_line)
             msg = entry.get("msg", "")
+
+            # 🎯 Фильтруем только сообщения из Steam-чата
+            if "Chat (from 'Steam" not in msg:
+                continue
+
             if contains_cheat_word(msg):
                 send_cheater_alert(msg, server["name"])
 

@@ -3,7 +3,7 @@ import re
 import json
 import os
 import logging
-from config import SERVERSRCON, BANLIST_GROUP_ID, BANLIST_THREAD_ID
+from config import TOKEN, SERVERSRCON, BANLIST_GROUP_ID, BANLIST_THREAD_ID
 
 BANLIST_PATH = os.path.join("data", "banlist.json")
 BANLIST_OLD_PATH = os.path.join("data", "banlist_old.json")
