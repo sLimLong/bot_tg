@@ -15,6 +15,12 @@ def send_level_jump_alert(msg, server_name):
         return
 
     player_name, steam_id, old_level, new_level = match.groups()
+    old_level = int(old_level)
+    new_level = int(new_level)
+
+    # 🔒 Фильтр: только если прыжок больше 5 уровней
+    if new_level - old_level <= 5:
+        return
 
     alert = (
         f"📈 Подозрительный прыжок уровня!\n"
@@ -25,6 +31,7 @@ def send_level_jump_alert(msg, server_name):
     )
 
     recipients = [
+        {"chat_id": GROUP_CHAT_ID},
         {"chat_id": GROUP_CHAT_ID, "message_thread_id": CHANNEL_CHAT_ID}
     ]
 

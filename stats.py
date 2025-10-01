@@ -32,6 +32,24 @@ def get_ip_info(ip: str) -> str:
         return f"{country}, {region}, {city} — {isp}{warning}"
     except:
         return "не удалось определить"
+        
+def get_player_position(player_name: str) -> str:
+    for server in SERVERS:
+        try:
+            response = requests.get(
+                f"{server['url']}/api/player/",
+                auth=server['auth'],
+                timeout=5
+            )
+            data = response.json()
+            players = data.get("data", {}).get("players", [])
+            for p in players:
+                if p.get("name", "").lower() == player_name.lower():
+                    pos = p.get("position", {})
+                    return f"X:{pos.get('x','—')} Y:{pos.get('y','—')} Z:{pos.get('z','—')}"
+        except Exception:
+            continue
+    return "Неизвестно"       
 
 # 📊 Старт команды /stats — только для админов
 async def start_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):

@@ -24,6 +24,7 @@ from modules.level_jump_alert import start_level_jump_alerts
 from modules.illegal_stat_alert import start_stat_alerts
 from modules.ban_sync import sync_banlists
 from handlers.banlist_handler import register_banlist_handler
+from handlers.ticket_game import start_ticket_monitoring
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -87,6 +88,8 @@ def run_bot():
         
         sync_banlists()
         
+        start_ticket_monitoring()
+              
         logging.info("✅ Все модули подключены. Ожидаем события...")
         app.run_polling()
 
