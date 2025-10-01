@@ -16,7 +16,6 @@ from bloodmoon_alert import schedule_bloodmoon_jobs
 from admin_menu import admin_menu_handler
 from reload_config import reload_config_handler
 from whois import whois_handler
-from banlist_updater import update_banlist
 from handlers.update_bot import get_handler
 from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
 from handlers.text_menu import menu_handlers
