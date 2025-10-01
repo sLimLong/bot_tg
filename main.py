@@ -21,8 +21,8 @@ from handlers.update_bot import get_handler
 from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
 from handlers.text_menu import menu_handlers
 from modules.cheater_alerts import start_cheater_alerts
-from level_jump_alert import start_level_jump_alerts
-from illegal_stat_alert import start_stat_alerts
+from modules.level_jump_alert import start_level_jump_alerts
+from modules.illegal_stat_alert import start_stat_alerts
 
 # 📁 Создание папки data/
 def ensure_data_folder():

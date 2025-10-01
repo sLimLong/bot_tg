@@ -2,17 +2,11 @@ import requests
 import time
 import re
 import threading
-from config import TOKEN, GROUP_CHAT_ID, CHANNEL_CHAT_ID  # CHANNEL_CHAT_ID — это thread_id
-from config import SERVERS
+from config import TOKEN, GROUP_CHAT_ID, CHANNEL_CHAT_ID, SERVERS  # CHANNEL_CHAT_ID — это thread_id
 
 # 🔍 Регулярка для прыжка уровня
-LEVEL_JUMP_REGEX = re.compile(
-    r"
+LEVEL_JUMP_REGEX = re.compile( r"WARNING: ([^\(]+) \(Steam_(\d+)\) jumped up more than one level \((\d+) -> (\d+)\)" )
 
-\[CSMM_Patrons\]
-
- WARNING: (.+?) \(Steam_(\d+)\) jumped up more than one level \((\d+) -> (\d+)\)"
-)
 
 # 📤 Отправка алерта в Telegram
 def send_level_jump_alert(msg, server_name):
