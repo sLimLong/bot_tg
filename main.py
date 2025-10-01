@@ -24,6 +24,7 @@ from modules.cheater_alerts import start_cheater_alerts
 from modules.level_jump_alert import start_level_jump_alerts
 from modules.illegal_stat_alert import start_stat_alerts
 from modules.ban_sync import sync_banlists
+from handlers.banlist_handler import register_banlist_handler
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -68,6 +69,9 @@ def run_bot():
         for handler in all_handlers:
             app.add_handler(handler)
 
+        # 👇 Регистрируем команду /updatebanlist
+        register_banlist_handler(app)
+        
         # ⏱ Фоновые задачи
         schedule_bloodmoon_jobs(app.job_queue)
         app.job_queue.run_repeating(lambda ctx: update_banlist(), interval=3600, first=10)

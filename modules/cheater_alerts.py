@@ -4,7 +4,7 @@ import re
 import threading
 from config import TOKEN, GROUP_CHAT_ID, CHANNEL_CHAT_ID, SERVERS
 
-CHEAT_KEYWORDS = ["чит", "читак", "читер", "читеры", "читами", "читов", "сломали"]
+CHEAT_KEYWORDS = ["читак", "читер", "читеры", "читами", "читов", "сломали"]
 
 # 🔍 Проверка сообщения на ключевые слова
 def contains_cheat_word(msg):
