@@ -22,6 +22,7 @@ from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
 from handlers.text_menu import menu_handlers
 from modules.cheater_alerts import start_cheater_alerts
 from level_jump_alert import start_level_jump_alerts
+from illegal_stat_alert import start_stat_alerts
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -77,6 +78,8 @@ def run_bot():
         start_cheater_alerts()
         
         start_level_jump_alerts()
+        
+        start_stat_alerts()
         
         logging.info("✅ Все модули подключены. Ожидаем события...")
         app.run_polling()
