@@ -18,17 +18,22 @@ def send_cheater_alert(msg, server_name):
         f"💬 Текст: {msg}"
     )
 
-    recipients = [GROUP_CHAT_ID, CHANNEL_CHAT_ID]
+    recipients = [
+        {"chat_id": GROUP_CHAT_ID},  # просто в супергруппу
+        {"chat_id": GROUP_CHAT_ID, "message_thread_id": CHANNEL_CHAT_ID}  # в тему внутри той же группы
+    ]
 
-    for chat_id in recipients:
+    for recipient in recipients:
         try:
+            payload = {"text": alert, **recipient}
             requests.post(
                 f"https://api.telegram.org/bot{TOKEN}/sendMessage",
-                json={"chat_id": chat_id, "text": alert},
+                json=payload,
                 timeout=5
             ).raise_for_status()
         except Exception as e:
-            print(f"❌ Не удалось отправить в {chat_id}: {e}")
+            print(f"❌ Не удалось отправить в {recipient}: {e}")
+
 
 # 🔄 Слушатель логов
 def run_cheater_listener(server):
