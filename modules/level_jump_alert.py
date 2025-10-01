@@ -25,7 +25,6 @@ def send_level_jump_alert(msg, server_name):
     )
 
     recipients = [
-        {"chat_id": GROUP_CHAT_ID},
         {"chat_id": GROUP_CHAT_ID, "message_thread_id": CHANNEL_CHAT_ID}
     ]
 
