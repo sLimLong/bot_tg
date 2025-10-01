@@ -3,6 +3,7 @@ import re
 import os
 import json
 from config import SERVERSRCON
+from datetime import datetime
 
 SYNC_PATH = os.path.join("data", "ban_sync.json")
 
@@ -36,7 +37,16 @@ def send_ban(server, entry):
         tn.read_until(b"Please enter password:", timeout=3)
         tn.write(server["password"].encode("utf-8") + b"\n")
 
-        cmd = f"ban add {entry['steamid']} 365 days {entry['reason']} {entry['name']}"
+        # ⏳ Вычисляем количество дней до окончания
+        try:
+            ban_until = datetime.strptime(entry["date"], "%Y-%m-%d %H:%M:%S")
+            now = datetime.now()
+            ban_days = max((ban_until - now).days, 1)
+        except Exception:
+            ban_days = 365  # fallback
+
+        # 📤 Формируем команду
+        cmd = f"ban add {entry['steamid']} {ban_days} days {entry['reason']} {entry['name']}"
         tn.write(cmd.encode("utf-8") + b"\n")
         tn.read_until(b">", timeout=5)
         tn.write(b"exit\n")

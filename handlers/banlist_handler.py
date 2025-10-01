@@ -35,7 +35,24 @@ def fetch_banlist(server):
         logging.warning(f"[banlist] {server['name']} — ошибка: {e}")
         return []
 
-def update_banlist(context=None):
+async def notify_new_bans(context: CallbackContext, new_bans):
+    msg = f"🛑 Обнаружено {len(new_bans)} новых банов:\n\n"
+    for server, entry in new_bans[:10]:
+        msg += (
+            f"🌐 <b>{server}</b>\n"
+            f"👤 {entry['name']} ({entry['steamid']})\n"
+            f"📄 Причина: {entry['reason']}\n"
+            f"⏳ До: {entry['date']}\n\n"
+        )
+
+    await context.bot.send_message(
+        chat_id=BANLIST_GROUP_ID,
+        message_thread_id=BANLIST_THREAD_ID,
+        text=msg.strip(),
+        parse_mode="HTML"
+    )
+
+async def update_banlist(context: CallbackContext = None):
     new_data = {}
     for server in SERVERSRCON:
         new_data[server["name"]] = fetch_banlist(server)
@@ -66,26 +83,13 @@ def update_banlist(context=None):
                     new_bans.append((server, entry))
 
         if new_bans:
-            msg = f"🛑 Обнаружено {len(new_bans)} новых банов:\n\n"
-            for server, entry in new_bans[:10]:
-                msg += (
-                    f"🌐 <b>{server}</b>\n"
-                    f"👤 {entry['name']} ({entry['steamid']})\n"
-                    f"📄 Причина: {entry['reason']}\n"
-                    f"⏳ До: {entry['date']}\n\n"
-                )
+            logging.info(f"[banlist] Отправляю {len(new_bans)} новых банов в чат.")
+            await notify_new_bans(context, new_bans)
 
-            context.bot.send_message(
-                chat_id=BANLIST_GROUP_ID,
-                message_thread_id=BANLIST_THREAD_ID,
-                text=msg.strip(),
-                parse_mode="HTML"
-            )
-
-def update_banlist_command(update: Update, context: CallbackContext):
-    update.message.reply_text("🔄 Обновляю банлист...")
-    update_banlist(context)
-    update.message.reply_text("✅ Банлист обновлён.")
+async def update_banlist_command(update: Update, context: CallbackContext):
+    await update.message.reply_text("🔄 Обновляю банлист...")
+    await update_banlist(context)
+    await update.message.reply_text("✅ Банлист обновлён.")
 
 def register_banlist_handler(app):
     app.add_handler(CommandHandler("updatebanlist", update_banlist_command))
