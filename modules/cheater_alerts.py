@@ -19,7 +19,6 @@ def send_cheater_alert(msg, server_name):
     )
 
     recipients = [
-        {"chat_id": GROUP_CHAT_ID},  # просто в супергруппу
         {"chat_id": GROUP_CHAT_ID, "message_thread_id": CHANNEL_CHAT_ID}  # в тему внутри той же группы
     ]
 
