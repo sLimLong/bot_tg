@@ -19,9 +19,7 @@ from whois import whois_handler
 from handlers.update_bot import get_handler
 from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
 from handlers.text_menu import menu_handlers
-from modules.cheater_alerts import start_cheater_alerts
-from modules.level_jump_alert import start_level_jump_alerts
-from modules.illegal_stat_alert import start_stat_alerts
+from modules.combined_alerts import start_combined_alerts
 from modules.ban_sync import sync_banlists
 from handlers.banlist_handler import register_banlist_handler
 from handlers.ticket_game import start_ticket_monitoring
@@ -75,16 +73,12 @@ def run_bot():
         # ⏱ Фоновые задачи
         schedule_bloodmoon_jobs(app.job_queue)
         app.job_queue.run_repeating(lambda ctx: update_banlist(), interval=3600, first=10)
-        app.job_queue.run_repeating(update_players_job, interval=300, first=15)
+        app.job_queue.run_repeating(update_players_job, interval=3600, first=15)
 
         # 🔄 Запускаем listener'ы после создания app
         run_all_listeners(app.bot)
         
-        start_cheater_alerts()
-        
-        start_level_jump_alerts()
-        
-        start_stat_alerts()
+        start_combined_alerts()
         
         sync_banlists()
         

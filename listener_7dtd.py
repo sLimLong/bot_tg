@@ -62,7 +62,7 @@ def run_listener(server, context):
             entries = response.json().get("data", {}).get("entries", [])
         except Exception as e:
             print(f"❌ [{server['name']}] Ошибка получения логов: {e}")
-            time.sleep(5)
+            time.sleep(1200)
             continue
 
         for entry in entries:
@@ -97,7 +97,7 @@ def run_listener(server, context):
 
             print(f"🎉 [{server['name']}] {name} (Steam_{steamid}) ↔ Telegram ID {telegram_id}")
 
-        time.sleep(5)
+        time.sleep(1200)
 
 # 🚀 Запуск всех listener'ов
 def run_all_listeners(context):

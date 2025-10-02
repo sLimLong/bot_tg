@@ -5,7 +5,7 @@ from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import CommandHandler, CallbackQueryHandler, ContextTypes
 from config import SERVERS
 
-PLAYERS_COOLDOWN = 60
+PLAYERS_COOLDOWN = 120
 
 def escape_markdown(text: str) -> str:
     return re.sub(r'([_*[\]()~`>#+\-=|{}.!])', r'\\\1', text)

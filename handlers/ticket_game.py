@@ -81,7 +81,7 @@ def run_ticket_listener(server):
             entries = response.json().get("data", {}).get("entries", [])
         except Exception as e:
             print(f"❌ [{server['name']}] Ошибка получения логов: {e}")
-            time.sleep(5)
+            time.sleep(120)
             continue
 
         for entry in entries:
@@ -101,7 +101,7 @@ def run_ticket_listener(server):
                     print(f"📨 Тикет от {player_name}: {help_text}")
                     send_ticket(player_name, help_text, steam_id)
 
-        time.sleep(5)
+        time.sleep(120)
 
 # 🚀 Запуск всех слушателей
 def start_ticket_monitoring():
