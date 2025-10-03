@@ -113,7 +113,7 @@ def run_combined_listener(server):
             entries = response.json().get("data", {}).get("entries", [])
         except Exception as e:
             print(f"❌ [{server['name']}] Ошибка получения логов: {e}")
-            time.sleep(300)
+            time.sleep(5)
             continue
 
         for entry in entries:
@@ -129,7 +129,7 @@ def run_combined_listener(server):
             elif "Chat (from 'Steam_" in msg and "Chat handled by mod" not in msg:
                 handle_cheater_chat(msg, server["name"])
 
-        time.sleep(300)
+        time.sleep(5)
 
 # 🚀 Запуск всех слушателей
 def start_combined_alerts():
