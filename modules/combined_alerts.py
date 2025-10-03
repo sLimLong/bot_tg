@@ -19,7 +19,6 @@ CHEAT_KEYWORDS = ["читак", "читер", "читеры", "читами", "�
 # 📤 Унифицированная отправка алерта
 def send_alert(text):
     recipients = [
-        {"chat_id": GROUP_CHAT_ID},
         {"chat_id": GROUP_CHAT_ID, "message_thread_id": CHANNEL_CHAT_ID}
     ]
     for recipient in recipients:
