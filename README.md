@@ -1,5 +1,5 @@
 <div>Telegram Bot for 7 Days To Die Server</div>
-<div>Поддержи мой проект <a href="https://boosty.to/lh-games">https://boosty.to/lh-games</a></div>
+<div>Поддержи мой проект <a href="https://boosty.to/slimlong">https://boosty.to/slimlong</a></div>
 <div>Для интеграции сервера и бота нужен будет&nbsp;</div>
 <div>Allocs -&nbsp;<a href="https://7dtd.illy.bz/wiki/Server%20fixes">https://7dtd.illy.bz/wiki/Server%20fixes</a></div>
 <div>+ Желательно&nbsp;<a href="https://bitbucket.org/obsessive-coder/sevendaystodie-servertools" target="_top">Server Tools</a></div>
