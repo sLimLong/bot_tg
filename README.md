@@ -1,6 +1,5 @@
 
 <img width="1024" height="1024" alt="Copilot_20251011_155431" src="https://github.com/user-attachments/assets/b8c357cb-1e96-441b-8b7e-18a436248572" />
-
 <div>Telegram Bot for 7 Days To Die Server</div>
 <div>Поддержи мой проект <a href="https://boosty.to/slimlong">https://boosty.to/slimlong</a></div>
 <div>Для интеграции сервера и бота нужен будет&nbsp;</div>
