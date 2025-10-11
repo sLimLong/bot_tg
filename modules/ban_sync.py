@@ -2,8 +2,13 @@ import telnetlib
 import re
 import os
 import json
+import time
+import logging
 from config import SERVERSRCON
 from datetime import datetime
+from telegram import Update
+from telegram.ext import CommandHandler, CallbackContext
+import asyncio
 
 SYNC_PATH = os.path.join("data", "ban_sync.json")
 
@@ -13,22 +18,24 @@ def fetch_banlist(server):
         tn.read_until(b"Please enter password:", timeout=3)
         tn.write(server["password"].encode("utf-8") + b"\n")
         tn.write(b"ban list\n")
-        raw = tn.read_until(b">", timeout=5).decode("utf-8")
+        raw = tn.read_until(b">", timeout=5).decode("utf-8", errors="ignore")
         tn.write(b"exit\n")
 
         pattern = r"(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - (\S+) \((.*?)\) - (.+)"
         matches = re.findall(pattern, raw)
 
-        return [
-            {
+        banlist = []
+        for date, steamid, name, reason in matches:
+            banlist.append({
                 "date": date,
-                "steamid": userid,
-                "name": name,
+                "steamid": steamid,
+                "name": name if name != "-unknown-" else "unknown",
                 "reason": reason
-            }
-            for date, userid, name, reason in matches
-        ]
-    except:
+            })
+        logging.info(f"[ban_sync] {server['name']}: загружено {len(banlist)} банов")
+        return banlist
+    except Exception as e:
+        logging.warning(f"[ban_sync] Ошибка при получении банлиста с {server['name']}: {e}")
         return []
 
 def send_ban(server, entry):
@@ -37,44 +44,74 @@ def send_ban(server, entry):
         tn.read_until(b"Please enter password:", timeout=3)
         tn.write(server["password"].encode("utf-8") + b"\n")
 
-        # ⏳ Вычисляем количество дней до окончания
+        auth_response = tn.read_until(b">", timeout=5).decode("utf-8", errors="ignore")
+        logging.info(f"[ban_sync] Авторизация на {server['name']}: {auth_response}")
+
         try:
             ban_until = datetime.strptime(entry["date"], "%Y-%m-%d %H:%M:%S")
             now = datetime.now()
             ban_days = max((ban_until - now).days, 1)
         except Exception:
-            ban_days = 365  # fallback
+            ban_days = 365
 
-        # 📤 Формируем команду
-        cmd = f"ban add {entry['steamid']} {ban_days} days {entry['reason']} {entry['name']}"
+        # Обрезаем причину до 128 символов и гарантируем, что она целиком в кавычках
+        reason = entry["reason"].strip()[:128].replace('"', '\\"')
+        name = entry["name"].strip().split()[0].replace('"', '\\"')  # только ID
+
+        cmd = f'ban add {entry["steamid"]} {ban_days} days "{reason}" "{name}"'
+
+        logging.info(f"[ban_sync] Отправляю на {server['name']}: {cmd}")
         tn.write(cmd.encode("utf-8") + b"\n")
-        tn.read_until(b">", timeout=5)
+
+        time.sleep(1)
+        response = tn.read_very_eager().decode("utf-8", errors="ignore")
+        logging.info(f"[ban_sync] Ответ от {server['name']}: {response}")
+
         tn.write(b"exit\n")
-    except:
-        pass
+    except Exception as e:
+        logging.warning(f"[ban_sync] Ошибка при отправке на {server['name']}: {e}")
 
 def sync_banlists():
     if len(SERVERSRCON) < 2:
+        logging.warning("[ban_sync] Недостаточно серверов для синхронизации.")
         return
 
-    bans_0 = fetch_banlist(SERVERSRCON[0])
-    bans_1 = fetch_banlist(SERVERSRCON[1])
+    all_banlists = {
+        server["name"]: fetch_banlist(server)
+        for server in SERVERSRCON
+    }
 
-    ids_0 = {ban["steamid"]: ban for ban in bans_0}
-    ids_1 = {ban["steamid"]: ban for ban in bans_1}
+    steamid_map = {}
+    for server_name, bans in all_banlists.items():
+        for entry in bans:
+            steamid = entry["steamid"]
+            if steamid not in steamid_map:
+                steamid_map[steamid] = {"entry": entry, "servers": set()}
+            steamid_map[steamid]["servers"].add(server_name)
 
-    # Баны, которых нет на втором сервере
-    for steamid, entry in ids_0.items():
-        if steamid not in ids_1:
-            send_ban(SERVERSRCON[1], entry)
+    added_count = 0
+    for steamid, data in steamid_map.items():
+        for server in SERVERSRCON:
+            name = server["name"]
+            if name not in data["servers"]:
+                send_ban(server, data["entry"])
+                added_count += 1
+                logging.info(f"[ban_sync] Бан {steamid} добавлен на {name}")
 
-    for steamid, entry in ids_1.items():
-        if steamid not in ids_0:
-            send_ban(SERVERSRCON[0], entry)
-
-    # Сохраняем текущую синхронизированную копию
     with open(SYNC_PATH, "w", encoding="utf-8") as f:
-        json.dump({
-            SERVERSRCON[0]["name"]: bans_0,
-            SERVERSRCON[1]["name"]: bans_1
-        }, f, indent=2, ensure_ascii=False)
+        json.dump(all_banlists, f, indent=2, ensure_ascii=False)
+
+    logging.info(f"[ban_sync] Синхронизация завершена. Добавлено {added_count} новых банов.")
+
+async def sync_banlists_command(update: Update, context: CallbackContext):
+    try:
+        await update.message.reply_text("🔄 Синхронизирую банлисты между серверами...")
+        loop = asyncio.get_running_loop()
+        await loop.run_in_executor(None, sync_banlists)
+        await update.message.reply_text("✅ Синхронизация завершена.")
+    except Exception as e:
+        logging.error(f"[ban_sync] Ошибка синхронизации: {e}")
+        await update.message.reply_text("❌ Ошибка при синхронизации.")
+
+def register_sync_command(app):
+    app.add_handler(CommandHandler("syncbanlist", sync_banlists_command))

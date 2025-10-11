@@ -6,9 +6,7 @@ import logging
 from telegram import Update
 from telegram.ext import CommandHandler, CallbackContext
 from config import SERVERSRCON, BANLIST_GROUP_ID, BANLIST_THREAD_ID
-
-BANLIST_PATH = os.path.join("data", "banlist.json")
-BANLIST_OLD_PATH = os.path.join("data", "banlist_old.json")
+from collections import defaultdict
 
 def fetch_banlist(server):
     try:
@@ -36,55 +34,68 @@ def fetch_banlist(server):
         return []
 
 async def notify_new_bans(context: CallbackContext, new_bans):
-    msg = f"🛑 Обнаружено {len(new_bans)} новых банов:\n\n"
-    for server, entry in new_bans[:10]:
-        msg += (
-            f"🌐 <b>{server}</b>\n"
-            f"👤 {entry['name']} ({entry['steamid']})\n"
-            f"📄 Причина: {entry['reason']}\n"
-            f"⏳ До: {entry['date']}\n\n"
-        )
+    # Группируем баны по серверу
+    grouped = defaultdict(list)
+    for server, entry in new_bans:
+        grouped[server].append(entry)
 
-    await context.bot.send_message(
-        chat_id=BANLIST_GROUP_ID,
-        message_thread_id=BANLIST_THREAD_ID,
-        text=msg.strip(),
-        parse_mode="HTML"
-    )
+    for server_name, entries in grouped.items():
+        msg = f"🛑 Новые баны на сервере <b>{server_name}</b> ({len(entries)}):\n\n"
+        for entry in entries:
+            msg += (
+                f"👤 {entry['name']} ({entry['steamid']})\n"
+                f"📄 Причина: {entry['reason']}\n"
+                f"⏳ До: {entry['date']}\n\n"
+            )
+
+        try:
+            await context.bot.send_message(
+                chat_id=BANLIST_GROUP_ID,
+                message_thread_id=BANLIST_THREAD_ID,
+                text=msg.strip(),
+                parse_mode="HTML"
+            )
+        except Exception as e:
+            logging.error(f"[banlist] Ошибка отправки банов для {server_name}: {e}")
 
 async def update_banlist(context: CallbackContext = None):
-    new_data = {}
+    new_bans_total = []
+
     for server in SERVERSRCON:
-        new_data[server["name"]] = fetch_banlist(server)
+        server_name = server["name"]
+        new_entries = fetch_banlist(server)
 
-    old_data = {}
-    if os.path.exists(BANLIST_PATH):
-        try:
-            with open(BANLIST_PATH, "r", encoding="utf-8") as f:
-                old_data = json.load(f)
-        except Exception as e:
-            logging.warning(f"[banlist] Ошибка чтения старого банлиста: {e}")
+        # Пути к файлам для конкретного сервера
+        new_path = os.path.join("data", f"banlist_{server_name}.json")
+        old_path = os.path.join("data", f"banlist_old_{server_name}.json")
 
-    with open(BANLIST_PATH, "w", encoding="utf-8") as f:
-        json.dump(new_data, f, indent=2, ensure_ascii=False)
+        # Загружаем старые данные
+        old_entries = []
+        if os.path.exists(new_path):
+            try:
+                with open(new_path, "r", encoding="utf-8") as f:
+                    old_entries = json.load(f)
+            except Exception as e:
+                logging.warning(f"[banlist] Ошибка чтения {new_path}: {e}")
 
-    with open(BANLIST_OLD_PATH, "w", encoding="utf-8") as f:
-        json.dump(old_data, f, indent=2, ensure_ascii=False)
+        # Сохраняем новые и старые данные
+        with open(new_path, "w", encoding="utf-8") as f:
+            json.dump(new_entries, f, indent=2, ensure_ascii=False)
+
+        with open(old_path, "w", encoding="utf-8") as f:
+            json.dump(old_entries, f, indent=2, ensure_ascii=False)
+
+        # Сравниваем и накапливаем новые баны
+        old_ids = {e["steamid"] for e in old_entries}
+        for entry in new_entries:
+            if entry["steamid"] not in old_ids:
+                new_bans_total.append((server_name, entry))
 
     logging.info("[banlist] Банлист обновлён.")
 
-    if context:
-        new_bans = []
-        for server, entries in new_data.items():
-            old_entries = old_data.get(server, [])
-            old_ids = {e["steamid"] for e in old_entries}
-            for entry in entries:
-                if entry["steamid"] not in old_ids:
-                    new_bans.append((server, entry))
-
-        if new_bans:
-            logging.info(f"[banlist] Отправляю {len(new_bans)} новых банов в чат.")
-            await notify_new_bans(context, new_bans)
+    if context and new_bans_total:
+        logging.info(f"[banlist] Отправляю {len(new_bans_total)} новых банов в чат.")
+        await notify_new_bans(context, new_bans_total)
 
 async def update_banlist_command(update: Update, context: CallbackContext):
     await update.message.reply_text("🔄 Обновляю банлист...")

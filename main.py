@@ -20,7 +20,7 @@ from handlers.update_bot import get_handler
 from listener_7dtd import run_all_listeners, reg_handler, whoami_handler
 from handlers.text_menu import menu_handlers
 from modules.combined_alerts import start_combined_alerts
-from modules.ban_sync import sync_banlists
+from modules.ban_sync import register_sync_command, sync_banlists
 from handlers.banlist_handler import register_banlist_handler
 from handlers.ticket_game import start_ticket_monitoring
 
@@ -69,6 +69,7 @@ def run_bot():
 
         # 👇 Регистрируем команду /updatebanlist
         register_banlist_handler(app)
+        register_sync_command(app)
         
         # ⏱ Фоновые задачи
         schedule_bloodmoon_jobs(app.job_queue)
@@ -80,7 +81,7 @@ def run_bot():
         
         start_combined_alerts()
         
-        sync_banlists()
+        sync_banlists()       
         
         start_ticket_monitoring()
               

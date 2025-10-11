@@ -68,7 +68,7 @@ def handle_level_jump(msg, server_name):
     old_level = int(old_level)
     new_level = int(new_level)
 
-    if new_level - old_level <= 5:
+    if new_level - old_level <= 1:
         return
 
     alert = (
