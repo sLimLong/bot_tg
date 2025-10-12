@@ -23,6 +23,7 @@ from modules.combined_alerts import start_combined_alerts
 from modules.ban_sync import register_sync_command, sync_banlists
 from handlers.banlist_handler import register_banlist_handler
 from handlers.ticket_game import start_ticket_monitoring
+from modules.shell_command import register_shell_command
 
 # 📁 Создание папки data/
 def ensure_data_folder():
@@ -70,6 +71,7 @@ def run_bot():
         # 👇 Регистрируем команду /updatebanlist
         register_banlist_handler(app)
         register_sync_command(app)
+        register_shell_command(app)
         
         # ⏱ Фоновые задачи
         schedule_bloodmoon_jobs(app.job_queue)
