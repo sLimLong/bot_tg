@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CommandHandler, ContextTypes
-from configs import ALLOWED_ADMINS  # список ID админов
+from config import ALLOWED_ADMINS  # список ID админов
 
 async def admin_menu_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
