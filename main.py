@@ -1,4 +1,4 @@
-# Версия бота 0.0.0.9
+# Версия бота 0.0.1.0
 import logging
 import os
 from telegram.ext import ApplicationBuilder
