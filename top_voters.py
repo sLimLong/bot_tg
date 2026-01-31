@@ -3,16 +3,7 @@ from collections import defaultdict
 from datetime import datetime, timedelta
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes, CommandHandler, CallbackQueryHandler
-
-# 🔐 API-ключи WarGM по серверам
-SERVER_KEYS = {
-    68433: "1sGAs_S_qsdA_h3PUPxMOfzJObAwI3lE",
-    71764: "fqbJ86k_5_XJ_TBYdSV_I0ib2iGD8ghb",
-    75803: "1sGAs_S_qsdA_h3PUPxMOfzJObAwI3lE"
-}
-
-# 🔑 Steam Web API ключ (получить на https://steamcommunity.com/dev/apikey)
-STEAM_API_KEY = "FB274C66E6D5713BE04B2ACED448939D"
+from config import SERVER_KEYS, STEAM_API_KEY
 
 def fetch_voters_from_all_servers(limit=10):
     combined = defaultdict(lambda: {"votes": 0, "points": 0, "user_steam_id": ""})
