@@ -2,23 +2,8 @@ import logging
 import aiohttp
 from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
+from config import ( TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, TELEGRAM_THREAD_ID, DISCORD_WEBHOOK_URL, DISCORD_ROLE_IDS )
 
-# —————————————————————————
-#               Настройки
-# —————————————————————————
-TELEGRAM_TOKEN     = ""
-TELEGRAM_CHAT_ID   =       # ID группы/канала
-TELEGRAM_THREAD_ID =                   # ID подканала (topic) внутри группы
-
-DISCORD_WEBHOOK_URL = ""
-
-# Список ролей для упоминания (оставьте пустым, если не нужны)
-DISCORD_ROLE_IDS = [
-    "",
-    "",
-    ""
-]
-# —————————————————————————
 
 # 📤 Отправка текста в Discord через webhook
 async def post_to_discord(text: str):
