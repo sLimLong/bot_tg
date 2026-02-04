@@ -3,17 +3,7 @@ import logging
 import requests
 from telegram import Bot
 from telegram.ext import CallbackContext, JobQueue
-from config import SERVERS  # список серверов с name, url, auth
-
-# 🧩 Настройки топиков для каждого сервера
-GROUPS = {
-    "7DTD PVE 1": {"chat_id": -1002695272288, "thread_id": 6},
-    "7DTD PVE 2": {"chat_id": -1002695272288, "thread_id": 4},
-    "7DTD PVE 3": {"chat_id": -1002695272288, "thread_id": 8}
-}
-
-# ⏱ Интервал между оповещениями (в секундах)
-BLOODMOON_INTERVAL = 3600  # 1 час
+from config import SERVERS, GROUPS, BLOODMOON_INTERVAL
 last_bloodmoon_alert = {}
 
 # 🔍 Проверка КН на серверах
