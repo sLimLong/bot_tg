@@ -8,23 +8,6 @@ from config import ALLOWED_ADMINS
 
 last_bloodmoon_alert = {}
 
-async def force_bloodmoon(update, context):
-    user_id = update.effective_user.id
-
-    if user_id not in ALLOWED_ADMINS:
-        await update.message.reply_text("⛔ У вас нет прав для выполнения этой команды.")
-        return
-
-    await update.message.reply_text("🔄 Принудительная проверка КН запущена.")
-
-    # Запускаем стандартную функцию check_bloodmoon как разовую задачу
-    context.job_queue.run_once(
-        callback=check_bloodmoon,
-        when=0,
-        data=SERVERS
-    )
-
-
 # 🔍 Проверка КН на серверах
 async def check_bloodmoon(context: CallbackContext):
     bot: Bot = context.bot
@@ -93,4 +76,22 @@ def schedule_bloodmoon_jobs(job_queue: JobQueue):
         first=5,
         data=SERVERS
     )
+    
+def run_bloodmoon_once(job_queue):
+    job_queue.run_once(
+        callback=check_bloodmoon,
+        when=0,
+        data=SERVERS
+    )    
+async def force_bloodmoon(update, context):
+    user_id = update.effective_user.id
+
+    if user_id not in ALLOWED_ADMINS:
+        await update.message.reply_text("⛔ У вас нет прав для выполнения этой команды.")
+        return
+
+    await update.message.reply_text("🔄 Принудительная проверка КН запущена.")
+
+    # Запуск через тот же механизм, что и планировщик
+    run_bloodmoon_once(context.job_queue)
 
