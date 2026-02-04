@@ -32,7 +32,6 @@ async def handle_admin_server_choice(update: Update, context: ContextTypes.DEFAU
         [InlineKeyboardButton("📍 Бан на всех серверах", callback_data="action_banall")],
         [InlineKeyboardButton("👥 Онлайн игроки", callback_data="action_players")],
         [InlineKeyboardButton("🔍 Игрок по EntityID", callback_data="action_apl")],
-        [InlineKeyboardButton("🔴 Проверить КН", callback_data="action_bloodmoon")],
         [InlineKeyboardButton("📘 Команды бота", callback_data="action_commands")]
     ]
     await query.edit_message_text(f"Сервер: {server['name']}\nВыберите действие:", reply_markup=InlineKeyboardMarkup(keyboard))
@@ -97,13 +96,6 @@ async def handle_admin_action(update: Update, context: ContextTypes.DEFAULT_TYPE
             "Просто напишите `/banall` в чат.",
             parse_mode="Markdown"
         )
-    elif action == "bloodmoon":
-    from bloodmoon_alert import check_bloodmoon
-    await query.edit_message_text("🔄 Запускаю проверку КН...")
-
-    # Принудительный запуск без интервалов
-    await check_bloodmoon(context)
-    
     elif action == "commands":
         await query.message.reply_text(
             "📘 Команды бота:\n\n"
