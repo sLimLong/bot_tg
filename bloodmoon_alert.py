@@ -4,7 +4,26 @@ import requests
 from telegram import Bot
 from telegram.ext import CallbackContext, JobQueue
 from config import SERVERS, GROUPS, BLOODMOON_INTERVAL
+from config import ALLOWED_ADMINS
+
 last_bloodmoon_alert = {}
+
+async def force_bloodmoon(update, context):
+    user_id = update.effective_user.id
+
+    if user_id not in ALLOWED_ADMINS:
+        await update.message.reply_text("⛔ У вас нет прав для выполнения этой команды.")
+        return
+
+    await update.message.reply_text("🔄 Принудительная проверка КН запущена.")
+
+    # Запускаем стандартную функцию check_bloodmoon как разовую задачу
+    context.job_queue.run_once(
+        callback=check_bloodmoon,
+        when=0,
+        data=SERVERS
+    )
+
 
 # 🔍 Проверка КН на серверах
 async def check_bloodmoon(context: CallbackContext):
@@ -70,7 +89,9 @@ def schedule_bloodmoon_jobs(job_queue: JobQueue):
     logging.info("[bloodmoon] Планировщик активирован")
     job_queue.run_repeating(
         callback=check_bloodmoon,
-        interval=1200,  # каждые 5 минут
+        interval=300,  # каждые 5 минут
         first=5,
         data=SERVERS
     )
+
+application.add_handler(CommandHandler("bloodmoon", force_bloodmoon))
