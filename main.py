@@ -14,6 +14,7 @@ from top_voters import top_voters_handler, top_voters_callback_handler
 from top_players import top_players_handler, top_players_callback_handler, reset_stats_handler, update_players_job
 from specific_topic_to_vk import topic_handler 
 from bloodmoon_alert import schedule_bloodmoon_jobs
+from bloodmoon_alert import force_bloodmoon
 from admin_menu import admin_menu_handler
 from reload_config import reload_config_handler
 from whois import whois_handler
@@ -68,11 +69,16 @@ def run_bot():
 
         for handler in all_handlers:
             app.add_handler(handler)
+        # 👉 Регистрируем команду /bloodmoon 
+        from bloodmoon_alert import force_bloodmoon 
+        from telegram.ext import CommandHandler 
+        app.add_handler(CommandHandler("bloodmoon", force_bloodmoon))            
 
         # 👇 Регистрируем команду /updatebanlist
         register_banlist_handler(app)
         register_sync_command(app)
         register_shell_command(app)
+        
         
         # ⏱ Фоновые задачи
         schedule_bloodmoon_jobs(app.job_queue)
@@ -93,6 +99,7 @@ def run_bot():
 
     except Exception as e:
         logging.error(f"❌ Ошибка при запуске: {e}")
+          
 
 if __name__ == "__main__":
     run_bot()
