@@ -94,4 +94,3 @@ def schedule_bloodmoon_jobs(job_queue: JobQueue):
         data=SERVERS
     )
 
-application.add_handler(CommandHandler("bloodmoon", force_bloodmoon))
