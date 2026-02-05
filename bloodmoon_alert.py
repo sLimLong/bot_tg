@@ -72,7 +72,7 @@ def schedule_bloodmoon_jobs(job_queue: JobQueue):
     logging.info("[bloodmoon] Планировщик активирован")
     job_queue.run_repeating(
         callback=check_bloodmoon,
-        interval=300,  # каждые 5 минут
+        interval=1200,  # каждые 5 минут
         first=5,
         data=SERVERS
     )
